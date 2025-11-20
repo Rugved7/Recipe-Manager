@@ -1,129 +1,91 @@
-import storeManager from "./storage";
+import { loadRecipes, saveRecipes } from "./storage.js";
 
-const recipeManager = {
-  // Method to get all recipes in localStorage
-  getAllRecipes() {
-    return storeManager.getRecipes();
-  },
+// recipesState -> in-memory array for all recipes
+let recipesState = loadRecipes();
 
-  // Get the recipe by its id
-  getRecipeById(id) {
-    const recipes = this.getAllRecipes();
-    return recipes.find((recipe) => recipe.id === id) || null;
-  },
+// getRecipes -> return a shallow copy of current recipes
+export function getRecipes() {
+  return [...recipesState];
+}
 
-  // Method to create a Recipe
-  createRecipe(data) {
-    try {
-      const recipes = this.getAllRecipes();
+// setRecipes -> replace in-memory recipes with given list
+export function setRecipes(list) {
+  recipesState = Array.isArray(list) ? [...list] : [];
+}
 
-      const newRecipe = {
-        id: Date.now().toString(),
-        ...data,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+// getRecipeById -> find a recipe object by its id
+export function getRecipeById(id) {
+  return recipesState.find((r) => r.id === id) || null;
+}
 
-      recipes.push(newRecipe);
+// createId -> generate a simple unique id for new recipes
+function createId() {
+  return "r_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+}
 
-      if (storeManager.saveRecipes(recipes)) {
-        return newRecipe;
-      }
-      return null;
-    } catch (error) {
-      console.log("Error creating recipe", error);
-      return null;
-    }
-  },
+// addRecipe -> push a new recipe into state and persist it
+export function addRecipe(data) {
+  const now = new Date().toISOString();
+  const recipe = {
+    ...data,
+    id: createId(),
+    createdAt: now,
+    updatedAt: now
+  };
+  recipesState.push(recipe);
+  saveRecipes(recipesState);
+  return recipe;
+}
 
-  // function to update Recipe
-  updateRecipe(id, data) {
-    try {
-      const recipes = this.getAllRecipes();
-      const index = recipes.findIndex((recipe) => recipe.id === id);
+// updateRecipe -> merge changes into existing recipe and persist
+export function updateRecipe(id, data) {
+  const index = recipesState.findIndex((r) => r.id === id);
+  if (index === -1) return null;
 
-      if (index === -1) {
-        console.log("Recipe not found");
-        return null;
-      }
+  const current = recipesState[index];
+  const updated = {
+    ...current,
+    ...data,
+    id: current.id,
+    createdAt: current.createdAt,
+    updatedAt: new Date().toISOString()
+  };
 
-      const updatedRecipe = {
-        ...recipes[index],
-        ...recipeData,
-        id: recipes[index].createdAt,
-        updatedAt: new Date().toISOString(),
-      };
+  recipesState[index] = updated;
+  saveRecipes(recipesState);
+  return updated;
+}
 
-      recipes[index] = updatedRecipe;
+// deleteRecipe -> remove a recipe by id and persist
+export function deleteRecipe(id) {
+  const next = recipesState.filter((r) => r.id !== id);
+  const changed = next.length !== recipesState.length;
+  if (!changed) return false;
+  recipesState = next;
+  saveRecipes(recipesState);
+  return true;
+}
 
-      if (storeManager.saveRecipes(recipes)) {
-        return updatedRecipe;
-      }
-      return null;
-    } catch (error) {
-      console.log("Error updating your recipe", error);
-      return null;
-    }
-  },
+// filterRecipes -> filter recipes using search, difficulty and max prep time
+export function filterRecipes(filters) {
+  const search = (filters.search || "").trim().toLowerCase();
+  const difficulty = filters.difficulty || "all";
+  const maxPrep =
+    filters.maxPrep !== "" && filters.maxPrep != null
+      ? Number(filters.maxPrep)
+      : null;
 
-  // Function to delete the recipe
-  deleteRecipe(id) {
-    try {
-      const recipes = this.getAllRecipes();
-      const filteredRecipes = recipes.filter((recipe) => recipe.id !== id);
+  return recipesState.filter((r) => {
+    const titleOk = search
+      ? r.title.toLowerCase().includes(search)
+      : true;
 
-      if (filteredRecipes.length === recipes.length) {
-        console.log("Recipe not found");
-        return false;
-      }
-    } catch (error) {
-      console.log("Error Deleting Recipe", error);
-      return false;
-    }
-  },
+    const diffOk =
+      difficulty === "all" ? true : r.difficulty === difficulty;
 
-  searchAndFilter(searchQuery, difficulty) {
-    let recipes = this.getAllRecipes();
+    const prepOk =
+      maxPrep == null ? true : Number(r.prepTime || 0) <= maxPrep;
 
-    if (searchQuery && searchQuery.trim() !== "") {
-      const lowerQuery = searchQuery.toLowerCase().trim();
-      recipes = recipes.filter((recipe) =>
-        recipe.title.toLowerCase().includes(lowerQuery)
-      );
-    }
-
-    if (difficulty && difficulty !== "all") {
-      recipes = recipes.filter(
-        (recipe) => recipe.difficulty.toLowerCase() === difficulty.toLowerCase()
-      );
-    }
-
-    return recipes;
-  },
-
-  //   Method to getStats
-  getStats() {
-    const recipes = this.getAllRecipes();
-
-    return {
-      total: recipes.length,
-      easy: recipes.filter((r) => r.difficulty === "easy").length,
-      medium: recipes.filter((r) => r.difficulty === "medium").length,
-      hard: recipes.filter((r) => r.difficulty === "hard").length,
-      avgPrepTime:
-        recipes.length > 0
-          ? Math.round(
-              recipes.reduce((sum, r) => sum + r.prepTime, 0) / recipes.length
-            )
-          : 0,
-      avgCookTime:
-        recipes.length > 0
-          ? Math.round(
-              recipes.reduce((sum, r) => sum + r.cookTime, 0) / recipes.length
-            )
-          : 0,
-    };
-  },
-};
-
-export default recipeManager;
+    return titleOk && diffOk && prepOk;
+  });
+}

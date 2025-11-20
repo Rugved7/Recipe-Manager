@@ -1,213 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cooked - A Recipe Manager</title>
-    <link rel="stylesheet" href="css/styles.css" />
-  </head>
-  <body>
-    <!-- Header -->
-    <header>
-      <div class="header-content">
-        <h1>🍲 Cooked - Recipe Manager</h1>
-        <button class="btn btn-primary" id="addRecipeBtn">
-          <span class="icon">+</span> Add Recipe
-        </button>
-      </div>
-    </header>
+<head>
+  <meta charset="UTF-8" />
+  <title>Recipe Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1 class="app-title">Recipe Manager</h1>
 
-    <!-- Main Container -->
-    <div class="container">
-      <!-- Recipe List View -->
-      <div id="listView" class="view active">
-        <!-- Controls -->
-        <div class="controls">
-          <div class="search-box">
-            <input
-              type="text"
-              id="searchInput"
-              placeholder="Search recipes by title..."
-            />
-            <span class="search-icon">🔍</span>
-          </div>
-          <div class="filter-box">
-            <select id="difficultyFilter">
-              <option value="all">All</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
-        </div>
+    <div class="controls-row">
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Search by title..."
+      />
 
-        <!-- Recipe Grid -->
-          <!-- Recipe cards will be inserted here -->
-        </div>
+      <select id="difficultyFilter">
+        <option value="all">All difficulties</option>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
 
-        <!-- Empty State -->
-        <div id="emptyState" class="empty-state" style="display: none">
-          <p>No recipes found. Add your first recipe!</p>
-        </div>
-      </div>
+      <input
+        id="maxPrepTimeFilter"
+        type="number"
+        min="0"
+        placeholder="Max prep (min)"
+      />
 
-      <!-- Recipe Detail View -->
-      <div id="detailView" class="view">
-        <button class="btn btn-secondary back-btn" id="backToListBtn">
-          <span class="icon">←</span> Back to List
-        </button>
-        <div id="recipeDetail">
-          <!-- Recipe details will be inserted here -->
-        </div>
-      </div>
-
-      <!-- Add/Edit Recipe Form View -->
-      <div id="formView" class="view">
-        <button class="btn btn-secondary back-btn" id="backToListFromFormBtn">
-          <span class="icon">←</span> Back to List
-        </button>
-
-        <div class="form-container">
-          <h2 id="formTitle">Add New Recipe</h2>
-          <form id="recipeForm">
-            <div class="form-group">
-              <label for="title">Recipe Title *</label>
-              <input type="text" id="title" required />
-              <span class="error" id="titleError"></span>
-            </div>
-
-            <div class="form-group">
-              <label for="description">Description *</label>
-              <textarea id="description" rows="3" required></textarea>
-              <span class="error" id="descriptionError"></span>
-            </div>
-
-            <div class="form-group">
-              <label>Ingredients *</label>
-              <div id="ingredientsContainer">
-                <div class="ingredient-row">
-                  <input
-                    type="text"
-                    placeholder="Item (e.g., Paneer)"
-                    class="ingredient-item"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Quantity (e.g., 400g)"
-                    class="ingredient-quantity"
-                    required
-                  />
-                  <button
-                    type="button"
-                    class="btn-remove"
-                    onclick="removeIngredient(this)"
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-              <button
-                type="button"
-                class="btn btn-secondary"
-                id="addIngredientBtn"
-              >
-                + Add Ingredient
-              </button>
-              <span class="error" id="ingredientsError"></span>
-            </div>
-
-            <div class="form-group">
-              <label>Steps *</label>
-              <div id="stepsContainer">
-                <div class="step-row">
-                  <span class="step-number">1.</span>
-                  <textarea
-                    class="step-input"
-                    placeholder="Describe this step..."
-                    required
-                  ></textarea>
-                  <button
-                    type="button"
-                    class="btn-remove"
-                    onclick="removeStep(this)"
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-              <button type="button" class="btn btn-secondary" id="addStepBtn">
-                + Add Step
-              </button>
-              <span class="error" id="stepsError"></span>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="prepTime">Prep Time (minutes) *</label>
-                <input type="number" id="prepTime" min="0" required />
-                <span class="error" id="prepTimeError"></span>
-              </div>
-
-              <div class="form-group">
-                <label for="cookTime">Cook Time (minutes) *</label>
-                <input type="number" id="cookTime" min="0" required />
-                <span class="error" id="cookTimeError"></span>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="difficulty">Difficulty *</label>
-              <select id="difficulty" required>
-                <option value="">Select difficulty...</option>
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-              <span class="error" id="difficultyError"></span>
-            </div>
-
-            <div class="form-group">
-              <label for="imageUrl">Image URL</label>
-              <input
-                type="url"
-                id="imageUrl"
-                placeholder="https://example.com/image.jpg"
-              />
-              <span class="error" id="imageUrlError"></span>
-            </div>
-
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Save Recipe</button>
-              <button
-                type="button"
-                class="btn btn-secondary"
-                id="cancelFormBtn"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+      <button id="addRecipeBtn" class="btn primary">+ Add Recipe</button>
+      <button id="themeToggleBtn" class="btn">Toggle Theme</button>
     </div>
+  </header>
 
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="modal">
-      <div class="modal-content">
-        <h3>Delete Recipe?</h3>
-        <p>
-          Are you sure you want to delete this recipe? This action cannot be
-          undone.
-        </p>
-        <div class="modal-actions">
-          <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
-          <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+  <main class="app-main">
+    <!-- List view -->
+    <section id="view-list">
+      <div id="recipesGrid" class="recipes-grid"></div>
+      <p id="emptyState" class="empty hidden">
+        No recipes found. Try changing the search or filters.
+      </p>
+    </section>
+
+    <!-- Detail view -->
+    <section id="view-detail" class="hidden">
+      <button id="backFromDetailBtn" class="btn small">&larr; Back</button>
+      <div id="recipeDetail" class="detail-card"></div>
+    </section>
+
+    <!-- Add / Edit form -->
+    <section id="view-form" class="hidden">
+      <button id="backFromFormBtn" class="btn small">&larr; Back</button>
+
+      <form id="recipeForm" class="recipe-form">
+        <h2 id="formHeading">Add Recipe</h2>
+
+        <div id="formErrors" class="form-errors hidden"></div>
+
+        <div class="form-row">
+          <label for="titleInput">Title *</label>
+          <input id="titleInput" type="text" />
         </div>
-      </div>
-    </div>
 
-    <!-- Load JavaScript Modules -->
-    <script type="module" src="js/app.js"></script>
-  </body>
+        <div class="form-row">
+          <label for="descriptionInput">Description *</label>
+          <textarea id="descriptionInput" rows="3"></textarea>
+        </div>
+
+        <div class="form-row two-col">
+          <div>
+            <label for="prepTimeInput">Prep time (min) *</label>
+            <input id="prepTimeInput" type="number" min="0" />
+          </div>
+          <div>
+            <label for="cookTimeInput">Cook time (min) *</label>
+            <input id="cookTimeInput" type="number" min="0" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="difficultyInput">Difficulty *</label>
+          <select id="difficultyInput">
+            <option value="">Select difficulty</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label for="imageUrlInput">Image URL (optional)</label>
+          <input id="imageUrlInput" type="url" />
+        </div>
+
+        <div class="form-row">
+          <label for="ingredientsInput">
+            Ingredients * (one per line)
+          </label>
+          <textarea
+            id="ingredientsInput"
+            rows="4"
+            placeholder="Onion&#10;Tomato&#10;Oil"
+          ></textarea>
+        </div>
+
+        <div class="form-row">
+          <label for="stepsInput">
+            Steps * (one per line)
+          </label>
+          <textarea
+            id="stepsInput"
+            rows="4"
+            placeholder="Step 1&#10;Step 2"
+          ></textarea>
+        </div>
+
+        <div class="form-row buttons-row">
+          <button type="submit" class="btn primary">Save</button>
+          <button type="button" id="cancelFormBtn" class="btn">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <small>All data is stored locally in your browser.</small>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
 </html>
