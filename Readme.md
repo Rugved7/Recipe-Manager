@@ -1,55 +1,44 @@
-🍽️ Recipe Manager
-A lightweight and functional Recipe Manager Web Application built entirely with HTML, CSS, and ES6 JavaScript—no frameworks required. All data is stored persistently in the browser's localStorage, so no backend or database is needed.
+# Recipe Manager
 
+A lightweight Recipe Manager web app built with plain HTML, CSS and ES6 JavaScript. All data is stored in the browser's localStorage — no backend required.
 
-✨ Features
-Category	Features
-CRUD	Add, Edit, Delete recipes
-Recipe Data	Ingredients, steps, timings, difficulty, and image
-Views	List view - Detail view - Form view
-Search & Filters	Search by title - Filter by difficulty - Max prep time filter
-UI Enhancements	Dark/Light theme toggle - Responsive layout - Recipe images
-Storage	100% client-side persistence via localStorage
-Validation	Prevents invalid submission - Error messages
-🧰 Tech Stack
-Tool	Purpose
-HTML5	Structure
-CSS3	Styling + responsive design
-JavaScript (ES6 Modules)	Logic, UI updates, event handling
-localStorage	Data persistence
-📂 Project Structure
-text
-recipe-manager/
-│   index.html          → Main entry file
-│
-├── css/
-│   └── styles.css      → Styling + responsiveness + theme
-│
-├── js/
-│   ├── app.js          → App entrypoint (views + state management)
-│   ├── storage.js      → localStorage and seeded data
-│   ├── recipes.js      → CRUD + filtering logic
-│   ├── ui.js           → DOM updates and event bindings
-│   └── utils.js        → Validation and helpers
-🥗 Seeded Recipes (On First Load)
-On the first load, the app automatically inserts a few sample recipes into localStorage:
+## Features
+- CRUD: Add, edit and delete recipes
+- Recipe data: title, description, ingredients, steps, prep/cook/total time, difficulty, optional image
+- Views: List view, Detail view, Form view
+- Search & filters: search by title, filter by difficulty, max prep time
+- UI: light/dark theme toggle, responsive layout
+- Storage: persistent client-side storage using localStorage
+- Validation: form validation before saving
 
-Recipe	Category
-Paneer Butter Masala	Dinner / Curry
-Masala Chai	Beverage
-Poha	Breakfast
-After seeding, you can freely create, edit, or delete recipes.
+## Tech stack
+- HTML5 — [index.html](index.html)
+- CSS3 — [css/styles.css](css/styles.css)
+- JavaScript (ES6 modules) — core logic in [js/app.js](js/app.js) and supporting modules
 
-📌 Data Schema
-Each recipe stored under localStorage["recipes"] looks like:
+## Project structure
+- [index.html](index.html) — main entry
+- [css/styles.css](css/styles.css) — styles and themes
+- [js/app.js](js/app.js) — app entrypoint and state management
+- [js/storage.js](js/storage.js) — localStorage helpers and seeding (see [`loadRecipes`](js/storage.js), [`seedRecipes`](js/storage.js), [`saveRecipes`](js/storage.js))
+- [js/recipes.js](js/recipes.js) — in-memory state, CRUD and filtering (see [`getRecipes`](js/recipes.js), [`addRecipe`](js/recipes.js), [`updateRecipe`](js/recipes.js), [`deleteRecipe`](js/recipes.js), [`filterRecipes`](js/recipes.js))
+- [js/ui.js](js/ui.js) — DOM rendering, event wiring and theme application (see [`initUI`](js/ui.js), [`applyTheme`](js/ui.js))
+- [js/utils.js](js/utils.js) — validation and helpers (see [`validateRecipeForm`](js/utils.js))
+- [.vscode/launch.json](.vscode/launch.json) — optional VS Code launch configuration for debugging in Chrome
 
-json
+## Seeded recipes
+On first load the app seeds a few sample recipes (Paneer Butter Masala, Masala Chai, Poha) via [`seedRecipes`](js/storage.js). Subsequent loads read recipes from localStorage using [`loadRecipes`](js/storage.js).
+
+## Data schema
+Each recipe stored under the `recipes` key looks like:
+
+```json
 {
   "id": "unique id",
   "title": "Paneer Butter Masala",
   "description": "Rich and creamy tomato-based gravy...",
-  "ingredients": ["Paneer cubes", "Butter", "Tomatoes", "..."],
-  "steps": ["Heat oil", "Add puree", "..."],
+  "ingredients": ["Paneer cubes", "Butter", "Tomatoes"],
+  "steps": ["Heat oil", "Add puree"],
   "prepTime": 20,
   "cookTime": 30,
   "totalTime": 50,
@@ -58,31 +47,3 @@ json
   "createdAt": "ISO timestamp",
   "updatedAt": "ISO timestamp"
 }
-🚀 Getting Started
-Clone the Repository
-
-bash
-git clone https://github.com/your-username/recipe-manager.git
-Navigate to Project
-
-bash
-cd recipe-manager
-Run the App
-
-Simply open index.html in your browser. No installation or server needed!
-
-🔄 Resetting Data (Optional)
-To reset to seeded recipes:
-
-Open the browser console (F12)
-
-Run:
-
-js
-localStorage.removeItem("recipes")
-Reload the page.
-
-📱 Responsiveness
-Supports Desktop, Tablet, and Mobile layouts.
-
-Recipe cards automatically resize based on screen width.
