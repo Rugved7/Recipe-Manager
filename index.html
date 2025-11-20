@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cooked- A free recipe manager</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <div class="header-content">
+        <h1>Cooked -A recipe Manager</h1>
+        <button class="btn btn-primary" id="addRecipeBtn">
+          <span class="icon">+</span>
+          Add Recipe
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+      <div class="view active" id="listview">
+        <div class="controls">
+          <div class="search-box">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search Recipes..."
+            />
+            <span class="search-icon">🔎</span>
+          </div>
+
+          <div class="filter-box">
+            <select id="difficultyFilter">
+              <option value="all">All</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Recipe Cards -->
+         <div id="recipeGrid" class="recipe-grid">
+            <!-- TODO: Grids will go here.... -->
+            </div>
+
+            <!-- Empty State -->
+             <div id="emptyState" class="empty-state" style="display: none;">
+                <p>
+                    No Recipes Found. Please Add your first to Serve...
+                </p>
+             </div>
+      </div>
+    </div>
+
+    <!-- In Detail View -->
+     <div id="detailView" class="view">
+        <button class="btn btn-secondary back-btn" id="backToListBtn">
+            <span class="icon">
+                <-
+            </span>
+            Back to List
+        </button>
+        
+        <div id="recipeDetails">
+            <!-- In detail recipe -->
+        </div>
+     </div>
+
+     <!-- Edit/Add Recipes form -->
+  </body>
+</html>
