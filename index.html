@@ -3,37 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cooked- A free recipe manager</title>
+    <title>Cooked - A Recipe Manager</title>
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
     <!-- Header -->
     <header>
       <div class="header-content">
-        <h1>Cooked -A recipe Manager</h1>
+        <h1>🍳 Cooked - Recipe Manager</h1>
         <button class="btn btn-primary" id="addRecipeBtn">
-          <span class="icon">+</span>
-          Add Recipe
+          <span class="icon">+</span> Add Recipe
         </button>
       </div>
     </header>
 
     <!-- Main Container -->
     <div class="container">
-      <div class="view active" id="listview">
+      <!-- Recipe List View -->
+      <div id="listView" class="view active">
+        <!-- Controls -->
         <div class="controls">
           <div class="search-box">
             <input
               type="text"
               id="searchInput"
-              placeholder="Search Recipes..."
+              placeholder="Search recipes by title..."
             />
-            <span class="search-icon">🔎</span>
+            <span class="search-icon">🔍</span>
           </div>
-
           <div class="filter-box">
             <select id="difficultyFilter">
-              <option value="all">All</option>
+              <option value="all">All Difficulties</option>
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
               <option value="hard">Hard</option>
@@ -41,34 +41,174 @@
           </div>
         </div>
 
-        <!-- Recipe Cards -->
-         <div id="recipeGrid" class="recipe-grid">
-            <!-- TODO: Grids will go here.... -->
+        <!-- Recipe Grid -->
+        <div id="recipeGrid" class="recipe-grid">
+          <!-- Recipe cards will be inserted here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none">
+          <p>No recipes found. Add your first recipe!</p>
+        </div>
+      </div>
+
+      <!-- Recipe Detail View -->
+      <div id="detailView" class="view">
+        <button class="btn btn-secondary back-btn" id="backToListBtn">
+          <span class="icon">←</span> Back to List
+        </button>
+        <div id="recipeDetail">
+          <!-- Recipe details will be inserted here -->
+        </div>
+      </div>
+
+      <!-- Add/Edit Recipe Form View -->
+      <div id="formView" class="view">
+        <button class="btn btn-secondary back-btn" id="backToListFromFormBtn">
+          <span class="icon">←</span> Back to List
+        </button>
+
+        <div class="form-container">
+          <h2 id="formTitle">Add New Recipe</h2>
+          <form id="recipeForm">
+            <div class="form-group">
+              <label for="title">Recipe Title *</label>
+              <input type="text" id="title" required />
+              <span class="error" id="titleError"></span>
             </div>
 
-            <!-- Empty State -->
-             <div id="emptyState" class="empty-state" style="display: none;">
-                <p>
-                    No Recipes Found. Please Add your first to Serve...
-                </p>
-             </div>
+            <div class="form-group">
+              <label for="description">Description *</label>
+              <textarea id="description" rows="3" required></textarea>
+              <span class="error" id="descriptionError"></span>
+            </div>
+
+            <div class="form-group">
+              <label>Ingredients *</label>
+              <div id="ingredientsContainer">
+                <div class="ingredient-row">
+                  <input
+                    type="text"
+                    placeholder="Item (e.g., Paneer)"
+                    class="ingredient-item"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Quantity (e.g., 400g)"
+                    class="ingredient-quantity"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="btn-remove"
+                    onclick="removeIngredient(this)"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                id="addIngredientBtn"
+              >
+                + Add Ingredient
+              </button>
+              <span class="error" id="ingredientsError"></span>
+            </div>
+
+            <div class="form-group">
+              <label>Steps *</label>
+              <div id="stepsContainer">
+                <div class="step-row">
+                  <span class="step-number">1.</span>
+                  <textarea
+                    class="step-input"
+                    placeholder="Describe this step..."
+                    required
+                  ></textarea>
+                  <button
+                    type="button"
+                    class="btn-remove"
+                    onclick="removeStep(this)"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+              <button type="button" class="btn btn-secondary" id="addStepBtn">
+                + Add Step
+              </button>
+              <span class="error" id="stepsError"></span>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="prepTime">Prep Time (minutes) *</label>
+                <input type="number" id="prepTime" min="0" required />
+                <span class="error" id="prepTimeError"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="cookTime">Cook Time (minutes) *</label>
+                <input type="number" id="cookTime" min="0" required />
+                <span class="error" id="cookTimeError"></span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="difficulty">Difficulty *</label>
+              <select id="difficulty" required>
+                <option value="">Select difficulty...</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+              <span class="error" id="difficultyError"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="imageUrl">Image URL</label>
+              <input
+                type="url"
+                id="imageUrl"
+                placeholder="https://example.com/image.jpg"
+              />
+              <span class="error" id="imageUrlError"></span>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save Recipe</button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                id="cancelFormBtn"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 
-    <!-- In Detail View -->
-     <div id="detailView" class="view">
-        <button class="btn btn-secondary back-btn" id="backToListBtn">
-            <span class="icon">
-                <-
-            </span>
-            Back to List
-        </button>
-        
-        <div id="recipeDetails">
-            <!-- In detail recipe -->
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+      <div class="modal-content">
+        <h3>Delete Recipe?</h3>
+        <p>
+          Are you sure you want to delete this recipe? This action cannot be
+          undone.
+        </p>
+        <div class="modal-actions">
+          <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+          <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
         </div>
-     </div>
+      </div>
+    </div>
 
-     <!-- Edit/Add Recipes form -->
+    <!-- Load JavaScript Modules -->
+    <script type="module" src="js/app.js"></script>
   </body>
 </html>
