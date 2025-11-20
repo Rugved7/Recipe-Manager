@@ -126,4 +126,4 @@ const recipeManager = {
   },
 };
 
-export default recipeManager
+export default recipeManager;
