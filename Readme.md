@@ -83,22 +83,6 @@ recipe-manager/
 
 That's it! The app will run directly in your browser.
 
-### Alternative: Using a Local Server (Optional)
-
-If you prefer using a local server:
-
-```bash
-# Using Python 3
-python -m http.server 8000
-
-# Using Node.js (if you have http-server installed)
-npx http-server
-
-# Using VS Code Live Server extension
-# Right-click index.html → "Open with Live Server"
-```
-
-Then navigate to `http://localhost:8000`
 
 ## 💻 How to Use
 
