@@ -1,137 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Recipe Manager</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body>
-  <header class="app-header">
-    <h1 class="app-title">Recipe Manager</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cooked- A Recipe Manager</title>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body class="dark-theme">
+    <header>
+      <div class="container">
+        <h1>🍳 Cooked- Recipe Manager</h1>
+        <button id="theme-toggle" class="theme-btn">
+          <span class="theme-icon">☀️</span>
+        </button>
+      </div>
+    </header>
 
-    <div class="controls-row">
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="Search by title..."
-      />
-
-      <select id="difficultyFilter">
-        <option value="all">All difficulties</option>
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-      </select>
-
-      <input
-        id="maxPrepTimeFilter"
-        type="number"
-        min="0"
-        placeholder="Max prep (min)"
-      />
-
-      <button id="addRecipeBtn" class="btn primary">+ Add Recipe</button>
-      <button id="themeToggleBtn" class="btn">Toggle Theme</button>
-    </div>
-  </header>
-
-  <main class="app-main">
-    <!-- List view -->
-    <section id="view-list">
-      <div id="recipesGrid" class="recipes-grid"></div>
-      <p id="emptyState" class="empty hidden">
-        No recipes found. Try changing the search or filters.
-      </p>
-    </section>
-
-    <!-- Detail view -->
-    <section id="view-detail" class="hidden">
-      <button id="backFromDetailBtn" class="btn small">&larr; Back</button>
-      <div id="recipeDetail" class="detail-card"></div>
-    </section>
-
-    <!-- Add / Edit form -->
-    <section id="view-form" class="hidden">
-      <button id="backFromFormBtn" class="btn small">&larr; Back</button>
-
-      <form id="recipeForm" class="recipe-form">
-        <h2 id="formHeading">Add Recipe</h2>
-
-        <div id="formErrors" class="form-errors hidden"></div>
-
-        <div class="form-row">
-          <label for="titleInput">Title *</label>
-          <input id="titleInput" type="text" />
-        </div>
-
-        <div class="form-row">
-          <label for="descriptionInput">Description *</label>
-          <textarea id="descriptionInput" rows="3"></textarea>
-        </div>
-
-        <div class="form-row two-col">
-          <div>
-            <label for="prepTimeInput">Prep time (min) *</label>
-            <input id="prepTimeInput" type="number" min="0" />
+    <main class="container">
+      <!-- Recipe List View -->
+      <div id="list-view" class="view active">
+        <div class="controls">
+          <div class="search-bar">
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Search recipes..."
+            />
           </div>
-          <div>
-            <label for="cookTimeInput">Cook time (min) *</label>
-            <input id="cookTimeInput" type="number" min="0" />
+          <div class="filters">
+            <select id="difficulty-filter">
+              <option value="All">All</option>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+            <input
+              type="number"
+              id="max-prep-time"
+              placeholder="Max prep time (min)"
+            />
           </div>
-        </div>
-
-        <div class="form-row">
-          <label for="difficultyInput">Difficulty *</label>
-          <select id="difficultyInput">
-            <option value="">Select difficulty</option>
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </div>
-
-        <div class="form-row">
-          <label for="imageUrlInput">Image URL (optional)</label>
-          <input id="imageUrlInput" type="url" />
-        </div>
-
-        <div class="form-row">
-          <label for="ingredientsInput">
-            Ingredients * (one per line)
-          </label>
-          <textarea
-            id="ingredientsInput"
-            rows="4"
-            placeholder="Onion&#10;Tomato&#10;Oil"
-          ></textarea>
-        </div>
-
-        <div class="form-row">
-          <label for="stepsInput">
-            Steps * (one per line)
-          </label>
-          <textarea
-            id="stepsInput"
-            rows="4"
-            placeholder="Step 1&#10;Step 2"
-          ></textarea>
-        </div>
-
-        <div class="form-row buttons-row">
-          <button type="submit" class="btn primary">Save</button>
-          <button type="button" id="cancelFormBtn" class="btn">
-            Cancel
+          <button id="add-recipe-btn" class="btn btn-primary">
+            <span>➕</span> Add Recipe
           </button>
         </div>
-      </form>
-    </section>
-  </main>
 
-  <footer class="app-footer">
-    <small>All data is stored locally in your browser.</small>
-  </footer>
+        <div id="recipe-grid" class="recipe-grid"></div>
+      </div>
 
-  <script type="module" src="js/app.js"></script>
-</body>
+      <!-- Recipe Detail View -->
+      <div id="detail-view" class="view">
+        <button id="back-to-list" class="btn btn-secondary">
+          ← Back to List
+        </button>
+        <div id="recipe-detail"></div>
+      </div>
+
+      <!-- Add/Edit Recipe Form View -->
+      <div id="form-view" class="view">
+        <button id="cancel-form" class="btn btn-secondary">← Cancel</button>
+        <h2 id="form-title">Add New Recipe</h2>
+
+        <form id="recipe-form">
+          <div class="form-group">
+            <label for="recipe-title">Title *</label>
+            <input type="text" id="recipe-title" required />
+            <span class="error" id="error-title"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="recipe-description">Description *</label>
+            <textarea id="recipe-description" rows="3" required></textarea>
+            <span class="error" id="error-description"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="recipe-ingredients">Ingredients * (one per line)</label>
+            <textarea id="recipe-ingredients" rows="6" required></textarea>
+            <span class="error" id="error-ingredients"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="recipe-steps">Steps * (one per line)</label>
+            <textarea id="recipe-steps" rows="6" required></textarea>
+            <span class="error" id="error-steps"></span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="recipe-prep-time">Prep Time (min) *</label>
+              <input type="number" id="recipe-prep-time" required min="1" />
+              <span class="error" id="error-prep-time"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="recipe-cook-time">Cook Time (min) *</label>
+              <input type="number" id="recipe-cook-time" required min="1" />
+              <span class="error" id="error-cook-time"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="recipe-servings">Servings *</label>
+              <input type="number" id="recipe-servings" required min="1" />
+              <span class="error" id="error-servings"></span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="recipe-difficulty">Difficulty *</label>
+            <select id="recipe-difficulty" required>
+              <option value="">Select difficulty</option>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+            <span class="error" id="error-difficulty"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="recipe-image">Image URL (optional)</label>
+            <input type="url" id="recipe-image" />
+            <span class="error" id="error-image"></span>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Save Recipe</button>
+        </form>
+      </div>
+    </main>
+
+    <script src="/js/storage.js"></script>
+    <script src="js/recipes.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+  </body>
 </html>
