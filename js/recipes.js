@@ -1,91 +1,154 @@
-import { loadRecipes, saveRecipes } from "./storage.js";
-
-// recipesState -> in-memory array for all recipes
-let recipesState = loadRecipes();
-
-// getRecipes -> return a shallow copy of current recipes
-export function getRecipes() {
-  return [...recipesState];
-}
-
-// setRecipes -> replace in-memory recipes with given list
-export function setRecipes(list) {
-  recipesState = Array.isArray(list) ? [...list] : [];
-}
-
-// getRecipeById -> find a recipe object by its id
-export function getRecipeById(id) {
-  return recipesState.find((r) => r.id === id) || null;
-}
-
-// createId -> generate a simple unique id for new recipes
-function createId() {
-  return "r_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
-}
-
-// addRecipe -> push a new recipe into state and persist it
-export function addRecipe(data) {
-  const now = new Date().toISOString();
-  const recipe = {
-    ...data,
-    id: createId(),
-    createdAt: now,
-    updatedAt: now
-  };
-  recipesState.push(recipe);
-  saveRecipes(recipesState);
-  return recipe;
-}
-
-// updateRecipe -> merge changes into existing recipe and persist
-export function updateRecipe(id, data) {
-  const index = recipesState.findIndex((r) => r.id === id);
-  if (index === -1) return null;
-
-  const current = recipesState[index];
-  const updated = {
-    ...current,
-    ...data,
-    id: current.id,
-    createdAt: current.createdAt,
-    updatedAt: new Date().toISOString()
-  };
-
-  recipesState[index] = updated;
-  saveRecipes(recipesState);
-  return updated;
-}
-
-// deleteRecipe -> remove a recipe by id and persist
-export function deleteRecipe(id) {
-  const next = recipesState.filter((r) => r.id !== id);
-  const changed = next.length !== recipesState.length;
-  if (!changed) return false;
-  recipesState = next;
-  saveRecipes(recipesState);
-  return true;
-}
-
-// filterRecipes -> filter recipes using search, difficulty and max prep time
-export function filterRecipes(filters) {
-  const search = (filters.search || "").trim().toLowerCase();
-  const difficulty = filters.difficulty || "all";
-  const maxPrep =
-    filters.maxPrep !== "" && filters.maxPrep != null
-      ? Number(filters.maxPrep)
-      : null;
-
-  return recipesState.filter((r) => {
-    const titleOk = search
-      ? r.title.toLowerCase().includes(search)
-      : true;
-
-    const diffOk =
-      difficulty === "all" ? true : r.difficulty === difficulty;
-
-    const prepOk =
-      maxPrep == null ? true : Number(r.prepTime || 0) <= maxPrep;
-
-    return titleOk && diffOk && prepOk;
-  });
-}
+const RecipeManager = {
+    recipes: [],
+    filteredRecipes: [],
+    currentRecipe: null,
+    editingRecipeId: null,
+    
+    init() {
+        Storage.initializeDefaultRecipes();
+        this.loadRecipes();
+    },
+    
+    loadRecipes() {
+        this.recipes = Storage.getAllRecipes();
+        this.filteredRecipes = [...this.recipes];
+    },
+    
+    searchRecipes(searchTerm) {
+        const term = searchTerm.toLowerCase().trim();
+        
+        if (!term) {
+            this.filteredRecipes = [...this.recipes];
+            return this.filteredRecipes;
+        }
+        
+        this.filteredRecipes = this.recipes.filter(recipe => 
+            recipe.title.toLowerCase().includes(term) ||
+            recipe.description.toLowerCase().includes(term)
+        );
+        
+        return this.filteredRecipes;
+    },
+    
+    filterByDifficulty(difficulty) {
+        if (difficulty === 'All') {
+            this.filteredRecipes = [...this.recipes];
+        } else {
+            this.filteredRecipes = this.recipes.filter(recipe => 
+                recipe.difficulty === difficulty
+            );
+        }
+        return this.filteredRecipes;
+    },
+    
+    filterByMaxPrepTime(maxTime) {
+        if (!maxTime || maxTime <= 0) {
+            this.filteredRecipes = [...this.recipes];
+            return this.filteredRecipes;
+        }
+        
+        this.filteredRecipes = this.recipes.filter(recipe => 
+            recipe.prepTime <= maxTime
+        );
+        
+        return this.filteredRecipes;
+    },
+    
+    applyAllFilters(searchTerm, difficulty, maxPrepTime) {
+        let results = [...this.recipes];
+        
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase().trim();
+            results = results.filter(recipe => 
+                recipe.title.toLowerCase().includes(term) ||
+                recipe.description.toLowerCase().includes(term)
+            );
+        }
+        
+        if (difficulty && difficulty !== 'All') {
+            results = results.filter(recipe => recipe.difficulty === difficulty);
+        }
+        
+        if (maxPrepTime && maxPrepTime > 0) {
+            results = results.filter(recipe => recipe.prepTime <= maxPrepTime);
+        }
+        
+        this.filteredRecipes = results;
+        return this.filteredRecipes;
+    },
+    
+    getRecipe(id) {
+        return Storage.getRecipeById(id);
+    },
+    
+    createRecipe(recipeData) {
+        const recipe = Storage.addRecipe(recipeData);
+        if (recipe) {
+            this.loadRecipes();
+            return recipe;
+        }
+        return null;
+    },
+    
+    updateRecipe(id, recipeData) {
+        const success = Storage.updateRecipe(id, recipeData);
+        if (success) {
+            this.loadRecipes();
+        }
+        return success;
+    },
+    
+    deleteRecipe(id) {
+        const success = Storage.deleteRecipe(id);
+        if (success) {
+            this.loadRecipes();
+            this.filteredRecipes = [...this.recipes];
+        }
+        return success;
+    },
+    
+    validateRecipeData(data) {
+        const errors = {};
+        
+        if (!data.title || data.title.trim().length < 3) {
+            errors.title = 'Title must be at least 3 characters';
+        }
+        
+        if (!data.description || data.description.trim().length < 10) {
+            errors.description = 'Description must be at least 10 characters';
+        }
+        
+        if (!data.ingredients || data.ingredients.length === 0) {
+            errors.ingredients = 'At least one ingredient is required';
+        }
+        
+        if (!data.steps || data.steps.length === 0) {
+            errors.steps = 'At least one step is required';
+        }
+        
+        if (!data.prepTime || data.prepTime < 1) {
+            errors.prepTime = 'Prep time must be at least 1 minute';
+        }
+        
+        if (!data.cookTime || data.cookTime < 1) {
+            errors.cookTime = 'Cook time must be at least 1 minute';
+        }
+        
+        if (!data.servings || data.servings < 1) {
+            errors.servings = 'Servings must be at least 1';
+        }
+        
+        if (!data.difficulty || !['Easy', 'Medium', 'Hard'].includes(data.difficulty)) {
+            errors.difficulty = 'Please select a difficulty level';
+        }
+        
+        if (data.image && !Utils.isValidUrl(data.image)) {
+            errors.image = 'Please enter a valid URL';
+        }
+        
+        return {
+            isValid: Object.keys(errors).length === 0,
+            errors
+        };
+    }
+};
