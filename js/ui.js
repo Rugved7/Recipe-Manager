@@ -1,347 +1,202 @@
-import { formatMinutes } from "./utils.js";
-
-// cache -> small object to store DOM references
-const cache = {
-  listView: null,
-  detailView: null,
-  formView: null,
-  grid: null,
-  emptyMsg: null,
-  detailBox: null,
-  form: null,
-  formErrors: null,
-  inputs: {},
-  searchInput: null,
-  difficultyFilter: null,
-  maxPrepFilter: null,
-  addBtn: null,
-  themeBtn: null,
-  backFromDetail: null,
-  backFromForm: null,
-  cancelFormBtn: null,
-};
-
-// initUI -> grab DOM elements and wire basic handlers
-export function initUI(handlers) {
-  cache.listView = document.getElementById("view-list");
-  cache.detailView = document.getElementById("view-detail");
-  cache.formView = document.getElementById("view-form");
-
-  cache.grid = document.getElementById("recipesGrid");
-  cache.emptyMsg = document.getElementById("emptyState");
-  cache.detailBox = document.getElementById("recipeDetail");
-
-  cache.form = document.getElementById("recipeForm");
-  cache.formErrors = document.getElementById("formErrors");
-
-  cache.inputs = {
-    title: document.getElementById("titleInput"),
-    description: document.getElementById("descriptionInput"),
-    prepTime: document.getElementById("prepTimeInput"),
-    cookTime: document.getElementById("cookTimeInput"),
-    difficulty: document.getElementById("difficultyInput"),
-    imageUrl: document.getElementById("imageUrlInput"),
-    ingredients: document.getElementById("ingredientsInput"),
-    steps: document.getElementById("stepsInput"),
-  };
-
-  cache.searchInput = document.getElementById("searchInput");
-  cache.difficultyFilter = document.getElementById("difficultyFilter");
-  cache.maxPrepFilter = document.getElementById("maxPrepTimeFilter");
-
-  cache.addBtn = document.getElementById("addRecipeBtn");
-  cache.themeBtn = document.getElementById("themeToggleBtn");
-  cache.backFromDetail = document.getElementById("backFromDetailBtn");
-  cache.backFromForm = document.getElementById("backFromFormBtn");
-  cache.cancelFormBtn = document.getElementById("cancelFormBtn");
-
-  // search / filters
-  cache.searchInput.addEventListener("input", () => {
-    handlers.onFiltersChange(getCurrentFilters());
-  });
-  cache.difficultyFilter.addEventListener("change", () => {
-    handlers.onFiltersChange(getCurrentFilters());
-  });
-  cache.maxPrepFilter.addEventListener("input", () => {
-    handlers.onFiltersChange(getCurrentFilters());
-  });
-
-  // add button
-  cache.addBtn.addEventListener("click", () => {
-    handlers.onAddRecipe();
-  });
-
-  // theme toggle
-  cache.themeBtn.addEventListener("click", () => {
-    handlers.onToggleTheme();
-  });
-
-  // back buttons
-  cache.backFromDetail.addEventListener("click", () => {
-    handlers.onBackToList();
-  });
-  cache.backFromForm.addEventListener("click", () => {
-    handlers.onBackToList();
-  });
-  cache.cancelFormBtn.addEventListener("click", () => {
-    handlers.onBackToList();
-  });
-
-  // form submit
-  cache.form.addEventListener("submit", (evt) => {
-    evt.preventDefault();
-    handlers.onSubmitForm(getFormValues());
-  });
-}
-
-// getCurrentFilters -> read search text and filter values from header
-export function getCurrentFilters() {
-  return {
-    search: cache.searchInput.value,
-    difficulty: cache.difficultyFilter.value,
-    maxPrep: cache.maxPrepFilter.value,
-  };
-}
-
-// renderRecipeList -> render list of cards into the grid
-export function renderRecipeList(recipes, handlers) {
-  cache.grid.innerHTML = "";
-
-  if (!recipes.length) {
-    cache.emptyMsg.classList.remove("hidden");
-    return;
-  }
-  cache.emptyMsg.classList.add("hidden");
-
-  recipes.forEach((recipe) => {
-    const card = document.createElement("article");
-    card.className = "card";
-    card.dataset.id = recipe.id;
-
-    // image
-    const img = document.createElement("img");
-    img.className = "card-img";
-    if (recipe.imageUrl) {
-      img.src = recipe.imageUrl;
-    } else {
-      img.src = "https://via.placeholder.com/300x200?text=No+Image";
+const UI = {
+    views: {
+        list: document.getElementById('list-view'),
+        detail: document.getElementById('detail-view'),
+        form: document.getElementById('form-view')
+    },
+    
+    showView(viewName) {
+        Object.values(this.views).forEach(view => view.classList.remove('active'));
+        this.views[viewName].classList.add('active');
+    },
+    
+    renderRecipeGrid(recipes) {
+        const grid = document.getElementById('recipe-grid');
+        
+        if (recipes.length === 0) {
+            grid.innerHTML = '<div class="no-recipes">No recipes found. Try adjusting your filters or add a new recipe!</div>';
+            return;
+        }
+        
+        grid.innerHTML = recipes.map(recipe => `
+            <div class="recipe-card" data-id="${recipe.id}">
+                ${recipe.isFavorite ? '<div class="favorite-badge">⭐ FAVORITE</div>' : ''}
+                ${recipe.image ? 
+                    `<img src="${recipe.image}" alt="${Utils.escapeHtml(recipe.title)}" class="recipe-card-image">` :
+                    `<div class="recipe-card-image">🍽️</div>`
+                }
+                <div class="recipe-card-content">
+                    <h3 class="recipe-card-title">${Utils.escapeHtml(recipe.title)}</h3>
+                    <p class="recipe-card-description">${Utils.escapeHtml(recipe.description)}</p>
+                    <div class="recipe-card-meta">
+                        <div class="meta-item">⏱️ ${Utils.formatTime(recipe.prepTime + recipe.cookTime)}</div>
+                        <div class="meta-item">👥 ${recipe.servings}</div>
+                        <span class="difficulty-badge ${Utils.getDifficultyClass(recipe.difficulty)}">
+                            ${recipe.difficulty}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        grid.querySelectorAll('.recipe-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const id = parseInt(card.dataset.id);
+                this.showRecipeDetail(id);
+            });
+        });
+    },
+    
+    showRecipeDetail(id) {
+        const recipe = RecipeManager.getRecipe(id);
+        if (!recipe) return;
+        
+        RecipeManager.currentRecipe = recipe;
+        
+        const detailContainer = document.getElementById('recipe-detail');
+        detailContainer.innerHTML = `
+            <div class="recipe-detail">
+                <div class="recipe-detail-header">
+                    <div>
+                        <h2>${recipe.isFavorite ? '⭐ ' : ''}${Utils.escapeHtml(recipe.title)}</h2>
+                        <p>${Utils.escapeHtml(recipe.description)}</p>
+                    </div>
+                    <div class="recipe-detail-actions">
+                        <button class="btn btn-primary" id="edit-recipe-btn">
+                            ✏️ Edit
+                        </button>
+                        <button class="btn btn-danger" id="delete-recipe-btn">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+                
+                ${recipe.image ? 
+                    `<img src="${recipe.image}" alt="${Utils.escapeHtml(recipe.title)}" class="recipe-detail-image">` :
+                    ''
+                }
+                
+                <div class="recipe-detail-meta">
+                    <div class="meta-item">⏱️ Prep: ${Utils.formatTime(recipe.prepTime)}</div>
+                    <div class="meta-item">🍳 Cook: ${Utils.formatTime(recipe.cookTime)}</div>
+                    <div class="meta-item">⏰ Total: ${Utils.formatTime(recipe.prepTime + recipe.cookTime)}</div>
+                    <div class="meta-item">👥 Servings: ${recipe.servings}</div>
+                    <span class="difficulty-badge ${Utils.getDifficultyClass(recipe.difficulty)}">
+                        ${recipe.difficulty}
+                    </span>
+                </div>
+                
+                <div class="recipe-detail-section">
+                    <h3>Ingredients</h3>
+                    <ul>
+                        ${recipe.ingredients.map(ing => `<li>${Utils.escapeHtml(ing)}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="recipe-detail-section">
+                    <h3>Instructions</h3>
+                    <ol>
+                        ${recipe.steps.map(step => `<li>${Utils.escapeHtml(step)}</li>`).join('')}
+                    </ol>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('edit-recipe-btn').addEventListener('click', () => {
+            this.showRecipeForm(recipe);
+        });
+        
+        document.getElementById('delete-recipe-btn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete this recipe?')) {
+                RecipeManager.deleteRecipe(recipe.id);
+                this.showView('list');
+                this.renderRecipeGrid(RecipeManager.filteredRecipes);
+            }
+        });
+        
+        this.showView('detail');
+    },
+    
+    showRecipeForm(recipe = null) {
+        const form = document.getElementById('recipe-form');
+        const formTitle = document.getElementById('form-title');
+        
+        if (recipe) {
+            formTitle.textContent = 'Edit Recipe';
+            RecipeManager.editingRecipeId = recipe.id;
+            
+            document.getElementById('recipe-title').value = recipe.title;
+            document.getElementById('recipe-description').value = recipe.description;
+            document.getElementById('recipe-ingredients').value = Utils.arrayToTextarea(recipe.ingredients);
+            document.getElementById('recipe-steps').value = Utils.arrayToTextarea(recipe.steps);
+            document.getElementById('recipe-prep-time').value = recipe.prepTime;
+            document.getElementById('recipe-cook-time').value = recipe.cookTime;
+            document.getElementById('recipe-servings').value = recipe.servings;
+            document.getElementById('recipe-difficulty').value = recipe.difficulty;
+            document.getElementById('recipe-image').value = recipe.image || '';
+        } else {
+            formTitle.textContent = 'Add New Recipe';
+            RecipeManager.editingRecipeId = null;
+            form.reset();
+        }
+        
+        this.clearFormErrors();
+        this.showView('form');
+    },
+    
+    clearFormErrors() {
+        document.querySelectorAll('.error').forEach(error => {
+            error.textContent = '';
+        });
+    },
+    
+    showFormErrors(errors) {
+        this.clearFormErrors();
+        
+        Object.keys(errors).forEach(field => {
+            const errorElement = document.getElementById(`error-${field.replace(/([A-Z])/g, '-$1').toLowerCase()}`);
+            if (errorElement) {
+                errorElement.textContent = errors[field];
+            }
+        });
+    },
+    
+    getFormData() {
+        return {
+            title: document.getElementById('recipe-title').value.trim(),
+            description: document.getElementById('recipe-description').value.trim(),
+            ingredients: Utils.parseTextareaToArray(document.getElementById('recipe-ingredients').value),
+            steps: Utils.parseTextareaToArray(document.getElementById('recipe-steps').value),
+            prepTime: parseInt(document.getElementById('recipe-prep-time').value),
+            cookTime: parseInt(document.getElementById('recipe-cook-time').value),
+            servings: parseInt(document.getElementById('recipe-servings').value),
+            difficulty: document.getElementById('recipe-difficulty').value,
+            image: document.getElementById('recipe-image').value.trim()
+        };
+    },
+    
+    initTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.className = savedTheme === 'dark' ? 'dark-theme' : '';
+        this.updateThemeIcon(savedTheme);
+    },
+    
+    toggleTheme() {
+        const isDark = document.body.classList.contains('dark-theme');
+        const newTheme = isDark ? 'light' : 'dark';
+        
+        if (isDark) {
+            document.body.classList.remove('dark-theme');
+        } else {
+            document.body.classList.add('dark-theme');
+        }
+        
+        localStorage.setItem('theme', newTheme);
+        this.updateThemeIcon(newTheme);
+    },
+    
+    updateThemeIcon(theme) {
+        const icon = document.querySelector('.theme-icon');
+        icon.textContent = theme === 'dark' ? '☀️' : '🌙';
     }
-    card.appendChild(img);
-
-    // title
-    const title = document.createElement("div");
-    title.className = "card-title";
-    title.textContent = recipe.title;
-    card.appendChild(title);
-
-    // meta
-    const meta = document.createElement("div");
-    meta.className = "card-meta";
-    meta.textContent =
-      "Difficulty: " +
-      recipe.difficulty +
-      " · Total: " +
-      formatMinutes(recipe.totalTime);
-    card.appendChild(meta);
-
-    // description
-    const desc = document.createElement("div");
-    desc.className = "card-desc";
-    desc.textContent = recipe.description;
-    card.appendChild(desc);
-
-    card.addEventListener("click", () => {
-      handlers.onOpenRecipe(recipe.id);
-    });
-
-    cache.grid.appendChild(card);
-  });
-}
-
-// renderRecipeDetail -> fill detail view with full information
-export function renderRecipeDetail(recipe, handlers) {
-  cache.detailBox.innerHTML = "";
-
-  if (!recipe) {
-    cache.detailBox.textContent = "Recipe not found.";
-    return;
-  }
-
-  const header = document.createElement("div");
-  header.className = "detail-header";
-
-  const titleBlock = document.createElement("div");
-  const h2 = document.createElement("h2");
-  h2.className = "detail-title";
-  h2.textContent = recipe.title;
-
-  const meta = document.createElement("div");
-  meta.className = "detail-meta";
-  meta.textContent =
-    "Prep: " +
-    formatMinutes(recipe.prepTime) +
-    " · Cook: " +
-    formatMinutes(recipe.cookTime) +
-    " · Total: " +
-    formatMinutes(recipe.totalTime) +
-    " · Difficulty: " +
-    recipe.difficulty;
-
-  titleBlock.appendChild(h2);
-  titleBlock.appendChild(meta);
-
-  const buttonsBox = document.createElement("div");
-  const editBtn = document.createElement("button");
-  editBtn.className = "btn small";
-  editBtn.textContent = "Edit";
-
-  const deleteBtn = document.createElement("button");
-  deleteBtn.className = "btn small";
-  deleteBtn.style.borderColor = "#dc2626";
-  deleteBtn.style.color = "#dc2626";
-  deleteBtn.textContent = "Delete";
-
-  editBtn.addEventListener("click", () => {
-    handlers.onEditRecipe(recipe.id);
-  });
-  deleteBtn.addEventListener("click", () => {
-    handlers.onDeleteRecipe(recipe.id);
-  });
-
-  buttonsBox.appendChild(editBtn);
-  buttonsBox.appendChild(deleteBtn);
-
-  header.appendChild(titleBlock);
-  header.appendChild(buttonsBox);
-
-  const desc = document.createElement("p");
-  desc.textContent = recipe.description;
-
-  const listsWrapper = document.createElement("div");
-  listsWrapper.className = "detail-lists";
-
-  const ingBox = document.createElement("div");
-  const ingTitle = document.createElement("h3");
-  ingTitle.className = "detail-section-title";
-  ingTitle.textContent = "Ingredients";
-  const ingList = document.createElement("ul");
-  recipe.ingredients.forEach((i) => {
-    const li = document.createElement("li");
-    li.textContent = i;
-    ingList.appendChild(li);
-  });
-  ingBox.appendChild(ingTitle);
-  ingBox.appendChild(ingList);
-
-  const stepBox = document.createElement("div");
-  const stepTitle = document.createElement("h3");
-  stepTitle.className = "detail-section-title";
-  stepTitle.textContent = "Steps";
-  const stepList = document.createElement("ol");
-  recipe.steps.forEach((s) => {
-    const li = document.createElement("li");
-    li.textContent = s;
-    stepList.appendChild(li);
-  });
-  stepBox.appendChild(stepTitle);
-  stepBox.appendChild(stepList);
-
-  listsWrapper.appendChild(ingBox);
-  listsWrapper.appendChild(stepBox);
-
-  cache.detailBox.appendChild(header);
-  cache.detailBox.appendChild(desc);
-  cache.detailBox.appendChild(listsWrapper);
-
-  if (recipe.imageUrl) {
-    const img = document.createElement("img");
-    img.src = recipe.imageUrl;
-    img.alt = recipe.title;
-    img.style.marginTop = "10px";
-    img.style.maxWidth = "100%";
-    img.style.borderRadius = "8px";
-    cache.detailBox.appendChild(img);
-  }
-}
-
-// showView -> show one of: "list" | "detail" | "form"
-export function showView(name) {
-  cache.listView.classList.add("hidden");
-  cache.detailView.classList.add("hidden");
-  cache.formView.classList.add("hidden");
-
-  if (name === "detail") {
-    cache.detailView.classList.remove("hidden");
-  } else if (name === "form") {
-    cache.formView.classList.remove("hidden");
-  } else {
-    cache.listView.classList.remove("hidden");
-  }
-}
-
-// fillFormForCreate -> clear form and heading for new recipe
-export function fillFormForCreate() {
-  cache.form.reset();
-  cache.formErrors.classList.add("hidden");
-  cache.formErrors.innerHTML = "";
-  const heading = document.getElementById("formHeading");
-  heading.textContent = "Add Recipe";
-}
-
-// fillFormForEdit -> set heading and populate fields from recipe
-export function fillFormForEdit(recipe) {
-  const heading = document.getElementById("formHeading");
-  heading.textContent = "Edit Recipe";
-  cache.formErrors.classList.add("hidden");
-  cache.formErrors.innerHTML = "";
-
-  cache.inputs.title.value = recipe.title || "";
-  cache.inputs.description.value = recipe.description || "";
-  cache.inputs.prepTime.value = recipe.prepTime ?? "";
-  cache.inputs.cookTime.value = recipe.cookTime ?? "";
-  cache.inputs.difficulty.value = recipe.difficulty || "";
-  cache.inputs.imageUrl.value = recipe.imageUrl || "";
-  cache.inputs.ingredients.value = (recipe.ingredients || []).join("\n");
-  cache.inputs.steps.value = (recipe.steps || []).join("\n");
-}
-
-// getFormValues -> read current values from form inputs
-export function getFormValues() {
-  return {
-    title: cache.inputs.title.value,
-    description: cache.inputs.description.value,
-    prepTime: cache.inputs.prepTime.value,
-    cookTime: cache.inputs.cookTime.value,
-    difficulty: cache.inputs.difficulty.value,
-    imageUrl: cache.inputs.imageUrl.value,
-    ingredients: cache.inputs.ingredients.value,
-    steps: cache.inputs.steps.value,
-  };
-}
-
-// showFormErrors -> show a small list of validation messages
-export function showFormErrors(messages) {
-  if (!messages || !messages.length) {
-    cache.formErrors.classList.add("hidden");
-    cache.formErrors.innerHTML = "";
-    return;
-  }
-  cache.formErrors.classList.remove("hidden");
-  cache.formErrors.innerHTML = "";
-  const ul = document.createElement("ul");
-  messages.forEach((msg) => {
-    const li = document.createElement("li");
-    li.textContent = msg;
-    ul.appendChild(li);
-  });
-  cache.formErrors.appendChild(ul);
-}
-
-// applyTheme -> toggle body class and button label
-export function applyTheme(theme) {
-  if (theme === "dark") {
-    document.body.classList.add("dark");
-  } else {
-    document.body.classList.remove("dark");
-  }
-}
+};
