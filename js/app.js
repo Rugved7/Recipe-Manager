@@ -1,154 +1,79 @@
-import { loadTheme, saveTheme } from "./storage.js";
-import {
-  getRecipes,
-  setRecipes,
-  getRecipeById,
-  addRecipe,
-  updateRecipe,
-  deleteRecipe,
-  filterRecipes
-} from "./recipes.js";
-import {
-  validateRecipeForm
-} from "./utils.js";
-import {
-  initUI,
-  getCurrentFilters,
-  renderRecipeList,
-  renderRecipeDetail,
-  showView,
-  fillFormForCreate,
-  fillFormForEdit,
-  getFormValues,
-  showFormErrors,
-  applyTheme
-} from "./ui.js";
-
-// state -> simple object to remember current selection and view
-const state = {
-  currentId: null,
-  theme: "light"
-};
-
-// init -> main entry: load data, set theme, init UI and render list
-function init() {
-  // recipes already loaded in recipes.js via loadRecipes()
-  setRecipes(getRecipes());
-
-  state.theme = loadTheme();
-  applyTheme(state.theme);
-
-  initUI({
-    onFiltersChange: handleFiltersChange,
-    onAddRecipe: handleAddRecipe,
-    onToggleTheme: handleToggleTheme,
-    onBackToList: handleBackToList,
-    onSubmitForm: handleSubmitForm,
-    onOpenRecipe: handleOpenRecipe,
-    onEditRecipe: handleEditRecipe,
-    onDeleteRecipe: handleDeleteRecipe
-  });
-
-  renderListWithCurrentFilters();
-  showView("list");
-}
-
-// handleFiltersChange -> called when search or filters change
-function handleFiltersChange(filtersFromUI) {
-  renderListWithCurrentFilters(filtersFromUI);
-}
-
-// handleAddRecipe -> open empty form for creating a new recipe
-function handleAddRecipe() {
-  state.currentId = null;
-  fillFormForCreate();
-  showView("form");
-}
-
-// handleToggleTheme -> switch between light and dark theme
-function handleToggleTheme() {
-  state.theme = state.theme === "dark" ? "light" : "dark";
-  applyTheme(state.theme);
-  saveTheme(state.theme);
-}
-
-// handleBackToList -> show list view again
-function handleBackToList() {
-  showView("list");
-  renderListWithCurrentFilters();
-}
-
-// handleSubmitForm -> validate and either create or update a recipe
-function handleSubmitForm(rawValues) {
-  const result = validateRecipeForm(rawValues);
-  if (!result.ok) {
-    showFormErrors(result.errors);
-    return;
-  }
-  showFormErrors([]);
-
-  let recipe;
-  if (state.currentId) {
-    recipe = updateRecipe(state.currentId, result.data);
-  } else {
-    recipe = addRecipe(result.data);
-  }
-
-  renderListWithCurrentFilters();
-  if (recipe) {
-    state.currentId = recipe.id;
-    renderRecipeDetail(recipe, {
-      onEditRecipe: handleEditRecipe,
-      onDeleteRecipe: handleDeleteRecipe
+document.addEventListener('DOMContentLoaded', () => {
+    RecipeManager.init();
+    UI.initTheme();
+    UI.renderRecipeGrid(RecipeManager.filteredRecipes);
+    
+    const searchInput = document.getElementById('search-input');
+    const difficultyFilter = document.getElementById('difficulty-filter');
+    const maxPrepTimeInput = document.getElementById('max-prep-time');
+    const addRecipeBtn = document.getElementById('add-recipe-btn');
+    const backToListBtn = document.getElementById('back-to-list');
+    const cancelFormBtn = document.getElementById('cancel-form');
+    const recipeForm = document.getElementById('recipe-form');
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    
+    const applyFilters = () => {
+        const searchTerm = searchInput.value;
+        const difficulty = difficultyFilter.value;
+        const maxPrepTime = parseInt(maxPrepTimeInput.value) || 0;
+        
+        RecipeManager.applyAllFilters(searchTerm, difficulty, maxPrepTime);
+        UI.renderRecipeGrid(RecipeManager.filteredRecipes);
+    };
+    
+    const debouncedFilter = Utils.debounce(applyFilters, 300);
+    
+    searchInput.addEventListener('input', debouncedFilter);
+    difficultyFilter.addEventListener('change', applyFilters);
+    maxPrepTimeInput.addEventListener('input', debouncedFilter);
+    
+    addRecipeBtn.addEventListener('click', () => {
+        UI.showRecipeForm();
     });
-    showView("detail");
-  } else {
-    showView("list");
-  }
-}
-
-// handleOpenRecipe -> show detail page for selected recipe
-function handleOpenRecipe(id) {
-  const recipe = getRecipeById(id);
-  if (!recipe) return;
-  state.currentId = id;
-  renderRecipeDetail(recipe, {
-    onEditRecipe: handleEditRecipe,
-    onDeleteRecipe: handleDeleteRecipe
-  });
-  showView("detail");
-}
-
-// handleEditRecipe -> load recipe into form for editing
-function handleEditRecipe(id) {
-  const recipe = getRecipeById(id);
-  if (!recipe) return;
-  state.currentId = id;
-  fillFormForEdit(recipe);
-  showView("form");
-}
-
-// handleDeleteRecipe -> confirm and delete recipe, then go back to list
-function handleDeleteRecipe(id) {
-  const ok = window.confirm("Delete this recipe?");
-  if (!ok) return;
-  const removed = deleteRecipe(id);
-  if (!removed) return;
-  if (state.currentId === id) {
-    state.currentId = null;
-  }
-  renderListWithCurrentFilters();
-  showView("list");
-}
-
-// renderListWithCurrentFilters -> read filters from UI and render list
-function renderListWithCurrentFilters(optionalFilters) {
-  const filters = optionalFilters || getCurrentFilters();
-  const recipes = filterRecipes(filters);
-  renderRecipeList(recipes, {
-    onOpenRecipe: handleOpenRecipe
-  });
-}
-
-// kick things off when DOM is ready
-document.addEventListener("DOMContentLoaded", init);
+    
+    backToListBtn.addEventListener('click', () => {
+        UI.showView('list');
+        UI.renderRecipeGrid(RecipeManager.filteredRecipes);
+    });
+    
+    cancelFormBtn.addEventListener('click', () => {
+        UI.showView('list');
+        UI.renderRecipeGrid(RecipeManager.filteredRecipes);
+    });
+    
+    themeToggleBtn.addEventListener('click', () => {
+        UI.toggleTheme();
+    });
+    
+    recipeForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const formData = UI.getFormData();
+        const validation = RecipeManager.validateRecipeData(formData);
+        
+        if (!validation.isValid) {
+            UI.showFormErrors(validation.errors);
+            return;
+        }
+        
+        if (RecipeManager.editingRecipeId) {
+            const success = RecipeManager.updateRecipe(RecipeManager.editingRecipeId, formData);
+            if (success) {
+                UI.showView('list');
+                applyFilters();
+                alert('Recipe updated successfully!');
+            } else {
+                alert('Failed to update recipe. Please try again.');
+            }
+        } else {
+            const newRecipe = RecipeManager.createRecipe(formData);
+            if (newRecipe) {
+                UI.showView('list');
+                applyFilters();
+                alert('Recipe added successfully!');
+            } else {
+                alert('Failed to add recipe. Please try again.');
+            }
+        }
+    });
+});
