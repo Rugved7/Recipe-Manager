@@ -1,10 +1,12 @@
 const UI = {
+  // DOM references to main view containers
   views: {
     list: document.getElementById("list-view"),
     detail: document.getElementById("detail-view"),
     form: document.getElementById("form-view"),
   },
 
+  // Switches between list, detail, and form views
   showView(viewName) {
     Object.values(this.views).forEach((view) =>
       view.classList.remove("active")
@@ -12,6 +14,7 @@ const UI = {
     this.views[viewName].classList.add("active");
   },
 
+  // Renders recipe cards in grid layout with click handlers
   renderRecipeGrid(recipes) {
     const grid = document.getElementById("recipe-grid");
 
@@ -59,6 +62,7 @@ const UI = {
       )
       .join("");
 
+    // Attach click handlers to navigate to detail view
     grid.querySelectorAll(".recipe-card").forEach((card) => {
       card.addEventListener("click", () => {
         const id = parseInt(card.dataset.id);
@@ -67,6 +71,7 @@ const UI = {
     });
   },
 
+  // Displays full recipe details with edit and delete actions
   showRecipeDetail(id) {
     const recipe = RecipeManager.getRecipe(id);
     if (!recipe) return;
@@ -138,10 +143,12 @@ const UI = {
             </div>
         `;
 
+    // Attach edit button handler
     document.getElementById("edit-recipe-btn").addEventListener("click", () => {
       this.showRecipeForm(recipe);
     });
 
+    // Attach delete button handler with confirmation
     document
       .getElementById("delete-recipe-btn")
       .addEventListener("click", () => {
@@ -155,11 +162,13 @@ const UI = {
     this.showView("detail");
   },
 
+  // Opens form view for creating new recipe or editing existing one
   showRecipeForm(recipe = null) {
     const form = document.getElementById("recipe-form");
     const formTitle = document.getElementById("form-title");
 
     if (recipe) {
+      // Populate form with existing recipe data for editing
       formTitle.textContent = "Edit Recipe";
       RecipeManager.editingRecipeId = recipe.id;
 
@@ -176,6 +185,7 @@ const UI = {
       document.getElementById("recipe-difficulty").value = recipe.difficulty;
       document.getElementById("recipe-image").value = recipe.image || "";
     } else {
+      // Reset form for new recipe creation
       formTitle.textContent = "Add New Recipe";
       RecipeManager.editingRecipeId = null;
       form.reset();
@@ -185,16 +195,19 @@ const UI = {
     this.showView("form");
   },
 
+  // Removes all validation error messages from the form
   clearFormErrors() {
     document.querySelectorAll(".error").forEach((error) => {
       error.textContent = "";
     });
   },
 
+  // Displays validation errors next to corresponding form fields
   showFormErrors(errors) {
     this.clearFormErrors();
 
     Object.keys(errors).forEach((field) => {
+      // Convert camelCase to kebab-case for error element IDs
       const errorElement = document.getElementById(
         `error-${field.replace(/([A-Z])/g, "-$1").toLowerCase()}`
       );
@@ -204,6 +217,7 @@ const UI = {
     });
   },
 
+  // Collects and returns form data as a structured recipe object
   getFormData() {
     return {
       title: document.getElementById("recipe-title").value.trim(),
@@ -222,12 +236,14 @@ const UI = {
     };
   },
 
+  // Loads saved theme preference from localStorage on initialization
   initTheme() {
     const savedTheme = localStorage.getItem("theme") || "dark";
     document.body.className = savedTheme === "dark" ? "dark-theme" : "";
     this.updateThemeIcon(savedTheme);
   },
 
+  // Toggles between light and dark theme and persists preference
   toggleTheme() {
     const isDark = document.body.classList.contains("dark-theme");
     const newTheme = isDark ? "light" : "dark";
@@ -242,6 +258,7 @@ const UI = {
     this.updateThemeIcon(newTheme);
   },
 
+  // Updates theme toggle icon based on current theme
   updateThemeIcon(theme) {
     const icon = document.querySelector(".theme-icon");
     icon.textContent = theme === "dark" ? "☀️" : "🌙";

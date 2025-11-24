@@ -63,6 +63,137 @@ recipe-manager/
 └── README.md                     # Documentation
 ```
 
+## 🏗️ Application Architecture
+
+Your Recipe Manager follows a **three-layer architecture** with clear separation of concerns:
+
+### Module Descriptions
+
+**📦 Module Overview:**
+
+1. **app.js** - Entry point that bootstraps the application and initializes all modules
+
+2. **ui.js** - Presentation layer that renders views, handles DOM manipulation and captures user interactions
+
+3. **recipes.js (RecipeManager)** - Business logic layer that processes recipe operations, applies search/filter logic and manages data flow
+
+4. **storage.js** - Data access layer that abstracts localStorage operations with clean CRUD interface (only layer touching localStorage)
+
+5. **utils.js** - Utility module providing helper functions for validation, formatting and common operations
+
+6. **localStorage** - Browser's persistent storage where all recipe data is saved as JSON
+
+### Architecture Flow Diagram
+
+#### Visual Flow (Mermaid Diagram)
+
+```mermaid
+graph TB
+    subgraph "Entry Point"
+        APP[app.js<br/>Initializes entire application]
+    end
+    
+    subgraph "Presentation Layer"
+        UI[ui.js<br/>Renders UI, handles user events]
+    end
+    
+    subgraph "Business Logic Layer"
+        RM[recipes.js - RecipeManager<br/>Manages recipe operations & filtering logic]
+    end
+    
+    subgraph "Data Access Layer"
+        STORAGE[storage.js<br/>Abstracts localStorage CRUD operations]
+    end
+    
+    subgraph "Browser Storage"
+        LS[(localStorage<br/>Persists recipe data)]
+    end
+    
+    subgraph "Utilities"
+        UTILS[utils.js<br/>Helper functions for validation & formatting]
+    end
+    
+    %% Flow connections
+    APP -->|Initializes| RM
+    APP -->|Initializes| UI
+    
+    UI -->|User Actions:<br/>Add/Edit/Delete/Search/Filter| RM
+    UI -->|Form Validation| UTILS
+    
+    RM -->|Load Recipes| STORAGE
+    RM -->|Create Recipe| STORAGE
+    RM -->|Update Recipe| STORAGE
+    RM -->|Delete Recipe| STORAGE
+    RM -->|Get Recipe by ID| STORAGE
+    RM -->|Uses| UTILS
+    
+    STORAGE -->|getAllRecipes<br/>saveRecipes<br/>removeAllRecipes| LS
+    
+    LS -.->|Data Retrieved| STORAGE
+    STORAGE -.->|Recipe Data| RM
+    RM -.->|Filtered/Processed Data| UI
+    UI -.->|Renders| USER[👤 User Interface]
+    
+    style APP fill:#ff6b35,stroke:#333,stroke-width:3px,color:#fff
+    style UI fill:#4a90e2,stroke:#333,stroke-width:2px,color:#fff
+    style RM fill:#50c878,stroke:#333,stroke-width:2px,color:#fff
+    style STORAGE fill:#9b59b6,stroke:#333,stroke-width:2px,color:#fff
+    style LS fill:#e74c3c,stroke:#333,stroke-width:2px,color:#fff
+    style UTILS fill:#f39c12,stroke:#333,stroke-width:2px,color:#fff
+    style USER fill:#ecf0f1,stroke:#333,stroke-width:2px
+```
+
+**Note**: To view the Mermaid diagram, use a Markdown viewer that supports Mermaid (like GitHub, GitLab, VS Code with Mermaid extension, or online Mermaid editors).
+
+### 🔄 Data Flow Pattern
+
+The architecture follows **unidirectional data flow**:
+
+1. **User Interaction** → UI Layer captures events
+2. **Business Logic** → RecipeManager processes the request
+3. **Data Access** → Storage.js communicates with localStorage
+4. **Response** → Data flows back up through the layers
+5. **UI Update** → UI Layer re-renders based on new data
+
+**Example Flows:**
+
+**Creating a Recipe:**
+```
+User clicks "Add Recipe" → UI captures form data → 
+RecipeManager.createRecipe() → Storage.addRecipe() → 
+localStorage.setItem() → Data saved → UI refreshes
+```
+
+**Loading Recipes:**
+```
+App initializes → RecipeManager.init() → 
+RecipeManager.loadRecipes() → Storage.getAllRecipes() → 
+localStorage.getItem() → Parse JSON → Return to UI → Render cards
+```
+
+**Filtering Recipes:**
+```
+User types in search → UI captures input → 
+RecipeManager.applyAllFilters() → Filter logic applied → 
+Filtered data returned → UI re-renders matching recipes
+```
+
+### Key Design Principles
+
+1. **Separation of Concerns**: Each layer has a single responsibility
+   - Storage.js = Data persistence only
+   - RecipeManager = Business logic and filtering
+   - UI.js = Presentation and user interaction
+
+2. **Abstraction**: The Storage layer abstracts localStorage operations, making it easy to swap storage mechanisms later (e.g., IndexedDB, API)
+
+3. **Loose Coupling**: Layers communicate through well-defined interfaces, reducing dependencies
+
+4. **Single Source of Truth**: Only Storage.js directly accesses localStorage through three core functions:
+   - `getAllRecipes()` - Read operation
+   - `saveRecipes()` - Write operation
+   - `removeAllRecipes()` - Clear operation
+
 ## 🚀 Setup & Installation
 
 ### Prerequisites
@@ -82,7 +213,6 @@ recipe-manager/
    - Or double-click the `index.html` file
 
 That's it! The app will run directly in your browser.
-
 
 ## 💻 How to Use
 
@@ -246,6 +376,16 @@ Tested and working on:
 - ✅ Safari 14+
 - ✅ Edge 90+
 
+## 🚀 Future Enhancements
+
+- Export/Import recipes as JSON
+- Print recipe functionality
+- Recipe categories and tags
+- Shopping list generator
+- Meal planning calendar
+- Recipe rating system
+- Share recipes via URL
+- Backend API integration option
 
 ## 📄 License
 
@@ -258,3 +398,5 @@ This project is open source and available for personal and educational use.
 - Icons: Emoji characters
 
 ---
+
+**Built with ❤️ using Vanilla JavaScript**--
