@@ -1,4 +1,4 @@
-# 🍳 Recipe Manager Web App
+# ☕ Recipe Manager Web App
 
 A modern, feature-rich recipe management application built with vanilla JavaScript, HTML, and CSS. Manage your favorite recipes with a clean, intuitive interface featuring dark mode by default and a beautiful orange accent theme.
 
