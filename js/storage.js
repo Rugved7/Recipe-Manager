@@ -1,6 +1,7 @@
 const Storage = {
   STORAGE_KEY: "recipes",
 
+  // Retrieves all recipes from localStorage
   getAllRecipes() {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY);
@@ -11,6 +12,7 @@ const Storage = {
     }
   },
 
+  // Persists recipes array to localStorage
   saveRecipes(recipes) {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(recipes));
@@ -21,6 +23,7 @@ const Storage = {
     }
   },
 
+  // Creates a new recipe with auto-generated ID and timestamp
   addRecipe(recipe) {
     const recipes = this.getAllRecipes();
     recipe.id = Date.now();
@@ -29,28 +32,33 @@ const Storage = {
     return this.saveRecipes(recipes) ? recipe : null;
   },
 
+  // Updates existing recipe properties while preserving the ID
   updateRecipe(id, updatedRecipe) {
     const recipes = this.getAllRecipes();
     const index = recipes.findIndex((r) => r.id === id);
 
     if (index !== -1) {
+      // Spread operator merges updates while preventing ID modification
       recipes[index] = { ...recipes[index], ...updatedRecipe, id };
       return this.saveRecipes(recipes);
     }
     return false;
   },
 
+  // Removes recipe from storage by filtering out the matching ID
   deleteRecipe(id) {
     const recipes = this.getAllRecipes();
     const filtered = recipes.filter((r) => r.id !== id);
     return this.saveRecipes(filtered);
   },
 
+  // Finds and returns a single recipe by ID
   getRecipeById(id) {
     const recipes = this.getAllRecipes();
     return recipes.find((r) => r.id === id);
   },
 
+  // Clears all recipes from localStorage
   removeAllRecipes() {
     try {
       localStorage.removeItem(this.STORAGE_KEY);
@@ -61,6 +69,7 @@ const Storage = {
     }
   },
 
+  // Seeds storage with default recipes only if empty (for demo/first-run)
   initializeDefaultRecipes() {
     const existing = this.getAllRecipes();
     if (existing.length > 0) return;
@@ -126,6 +135,7 @@ const Storage = {
         createdAt: new Date().toISOString(),
       },
       {
+        // Unique IDs for default recipes using timestamp + offset
         id: Date.now() + 1,
         title: "Adrak Chai (Ginger Tea)",
         description:
@@ -225,3 +235,4 @@ const Storage = {
     this.saveRecipes(defaultRecipes);
   },
 };
+

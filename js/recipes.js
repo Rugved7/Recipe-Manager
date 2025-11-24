@@ -156,4 +156,4 @@ const RecipeManager = {
       errors,
     };
   },
-};
+}

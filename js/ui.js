@@ -25,33 +25,31 @@ const UI = {
       .map(
         (recipe) => `
             <div class="recipe-card" data-id="${recipe.id}">
-                ${
-                  recipe.isFavorite
-                    ? '<div class="favorite-badge">⭐ FAVORITE</div>'
-                    : ""
-                }
-                ${
-                  recipe.image
-                    ? `<img src="${recipe.image}" alt="${Utils.escapeHtml(
-                        recipe.title
-                      )}" class="recipe-card-image">`
-                    : `<div class="recipe-card-image">🍽️</div>`
-                }
+                ${recipe.isFavorite
+            ? '<div class="favorite-badge">⭐ FAVORITE</div>'
+            : ""
+          }
+                ${recipe.image
+            ? `<img src="${recipe.image}" alt="${Utils.escapeHtml(
+              recipe.title
+            )}" class="recipe-card-image">`
+            : `<div class="recipe-card-image">🍽️</div>`
+          }
                 <div class="recipe-card-content">
                     <h3 class="recipe-card-title">${Utils.escapeHtml(
-                      recipe.title
-                    )}</h3>
+            recipe.title
+          )}</h3>
                     <p class="recipe-card-description">${Utils.escapeHtml(
-                      recipe.description
-                    )}</p>
+            recipe.description
+          )}</p>
                     <div class="recipe-card-meta">
                         <div class="meta-item">⏱️ ${Utils.formatTime(
-                          recipe.prepTime + recipe.cookTime
-                        )}</div>
+            recipe.prepTime + recipe.cookTime
+          )}</div>
                         <div class="meta-item">👥 ${recipe.servings}</div>
                         <span class="difficulty-badge ${Utils.getDifficultyClass(
-                          recipe.difficulty
-                        )}">
+            recipe.difficulty
+          )}">
                             ${recipe.difficulty}
                         </span>
                     </div>
@@ -95,28 +93,27 @@ const UI = {
                     </div>
                 </div>
                 
-                ${
-                  recipe.image
-                    ? `<img src="${recipe.image}" alt="${Utils.escapeHtml(
-                        recipe.title
-                      )}" class="recipe-detail-image">`
-                    : ""
-                }
+                ${recipe.image
+        ? `<img src="${recipe.image}" alt="${Utils.escapeHtml(
+          recipe.title
+        )}" class="recipe-detail-image">`
+        : ""
+      }
                 
                 <div class="recipe-detail-meta">
                     <div class="meta-item">⏱️ Prep: ${Utils.formatTime(
-                      recipe.prepTime
-                    )}</div>
+        recipe.prepTime
+      )}</div>
                     <div class="meta-item">🍳 Cook: ${Utils.formatTime(
-                      recipe.cookTime
-                    )}</div>
+        recipe.cookTime
+      )}</div>
                     <div class="meta-item">⏰ Total: ${Utils.formatTime(
-                      recipe.prepTime + recipe.cookTime
-                    )}</div>
+        recipe.prepTime + recipe.cookTime
+      )}</div>
                     <div class="meta-item">👥 Servings: ${recipe.servings}</div>
                     <span class="difficulty-badge ${Utils.getDifficultyClass(
-                      recipe.difficulty
-                    )}">
+        recipe.difficulty
+      )}">
                         ${recipe.difficulty}
                     </span>
                 </div>
@@ -125,8 +122,8 @@ const UI = {
                     <h3>Ingredients</h3>
                     <ul>
                         ${recipe.ingredients
-                          .map((ing) => `<li>${Utils.escapeHtml(ing)}</li>`)
-                          .join("")}
+        .map((ing) => `<li>${Utils.escapeHtml(ing)}</li>`)
+        .join("")}
                     </ul>
                 </div>
                 
@@ -134,8 +131,8 @@ const UI = {
                     <h3>Instructions</h3>
                     <ol>
                         ${recipe.steps
-                          .map((step) => `<li>${Utils.escapeHtml(step)}</li>`)
-                          .join("")}
+        .map((step) => `<li>${Utils.escapeHtml(step)}</li>`)
+        .join("")}
                     </ol>
                 </div>
             </div>
