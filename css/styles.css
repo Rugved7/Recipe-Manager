@@ -231,7 +231,6 @@ h2 {
     margin-bottom: 15px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
-    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -409,4 +408,111 @@ h2 {
     padding: 60px 20px;
     color: var(--text-secondary);
     font-size: 16px;
+}
+
+.welcome-container {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.welcome-content {
+    max-width: 700px;
+    margin-bottom: 60px;
+}
+
+.welcome-title {
+    font-size: 64px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    letter-spacing: -2px;
+}
+
+.welcome-subtitle {
+    font-size: 24px;
+    color: var(--orange);
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.welcome-description {
+    font-size: 18px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.btn-large {
+    padding: 18px 36px;
+    font-size: 16px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.welcome-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    max-width: 900px;
+    width: 100%;
+}
+
+.feature-item {
+    background-color: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 30px 20px;
+    transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+    border-color: var(--orange);
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.feature-item h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+}
+
+.feature-item p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .welcome-title {
+        font-size: 42px;
+    }
+    
+    .welcome-subtitle {
+        font-size: 20px;
+    }
+    
+    .welcome-description {
+        font-size: 16px;
+    }
+    
+    .welcome-features {
+        grid-template-columns: 1fr;
+    }
 }

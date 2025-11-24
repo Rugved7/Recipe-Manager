@@ -387,16 +387,5 @@ Tested and working on:
 - Share recipes via URL
 - Backend API integration option
 
-## 📄 License
-
-This project is open source and available for personal and educational use.
-
-## 🙏 Acknowledgments
-
-- Default recipe images from [Unsplash](https://unsplash.com)
-- Font: [JetBrains Mono](https://www.jetbrains.com/lp/mono/)
-- Icons: Emoji characters
-
 ---
 
-**Built with ❤️ using Vanilla JavaScript**--
